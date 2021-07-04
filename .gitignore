@@ -130,3 +130,5 @@ dmypy.json
 
 # config for api-key and prefs
 config.ini
+# results csvs
+/results/*.csv
