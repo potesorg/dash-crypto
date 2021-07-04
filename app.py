@@ -12,9 +12,10 @@ import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
 import plotly.express as px
+import dash_bootstrap_components as dbc
 
 
-app = dash.Dash()
+app = dash.Dash(external_stylesheets=[dbc.themes.LUX])
 """This class is used to load preferences from the config file
     """
 
@@ -42,10 +43,10 @@ class MessariHandler():
         coins = pref.coins
         # loop over coins and fetch results
         for coin, items in coins.items():
-            # self.call(coins, coin, pref. start, pref.end, pref.headers)
-            # path = self.write_responses(coins, coin)
+            self.call(coins, coin, pref. start, pref.end, pref.headers)
+            path = self.write_responses(coins, coin)
             # use local csvs to avoid doing API calls
-            path = 'results/'+coin+'.csv'
+            # path = 'results/'+coin+'.csv'
             df = pd.read_csv(path)
             print(type(df), df)
             # extend the dataframe to include new fetched data
@@ -124,18 +125,25 @@ ch = [
         }
     )
 ]
-for coin in pref.coins:
+
+ch1 = []
+# add the data from the csvs to a line graph and create a 2x2 layout 
+for index, coin in enumerate(pref.coins):
     adf = df[df["symbol"] == coin.upper()]
-    ch.append(
-        dcc.Graph(
-            id=f'value-over-time-{coin}',
-            figure=px.line(
-                adf,
-                x='timestamp',
-                y='high_price'
-            )
+    g =(dbc.Col([html.P(coin.upper()), dcc.Graph(
+        id=f'value-over-time-{coin}',
+        figure=px.line(
+            adf,
+            x='timestamp',
+            y='high_price'
         )
-    )
+    )]
+    , width="auto"))
+    ch1.append(g)
+    # this keeps the formats of the coins
+    if len(ch1) >= 2:
+        ch.append(dbc.Row(ch1))
+        ch1 = []
 
 app.layout = html.Div(children=ch)
 
