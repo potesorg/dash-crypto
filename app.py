@@ -158,9 +158,13 @@ for index, coin in enumerate(pref.coins):
     )])
     ch1.append(g)
     # this keeps the formats of the coins
-    if len(ch1) >= 2:
+    if index % 2 == 1:
         ch.append(dbc.Row(ch1, style=pref.row_style))
         ch1 = []
+    elif index == len(pref.coins) - 1:
+        # this handles even numbers, otherwise duplicates ids
+        ch.append(dbc.Row(ch1, style=pref.row_style))
+
 
 app.layout = html.Div(children=ch)
 
