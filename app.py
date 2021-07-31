@@ -32,6 +32,12 @@ class Preferences():
         self.headers = {'x-messari-api-key': config['api_key']}
         # property used to avoid making api calls
         self.local = config['local'] == "True"
+        self.row_style = {
+            'marginTop': '2%',
+            'marginLeft': '2%',
+            'marginRight': '2%',
+            'height': 'auto',
+            'border': '1px solid grey'}
 
 
 class MessariHandler():
@@ -105,7 +111,7 @@ class MessariHandler():
 pref = Preferences()
 handler = MessariHandler(pref)
 df = handler.all_df
-ch = [
+ch = [dbc.Row(dbc.Col(
     dcc.Graph(
         id='value-over-time',
         figure={
@@ -127,18 +133,18 @@ ch = [
                 yaxis={'type': 'date', 'title': 'Timestamp'},
                 xaxis={'title': 'Price ($)'},
                 margin={'l': 140, 'b': 40, 't': 10, 'r': 140},
-                legend={'x': 0, 'y': 1},
+                legend={'x': 1, 'y': 1},
                 hovermode='closest'
             )
         }
-    )
+    )), style=pref.row_style)
 ]
 
 ch1 = []
 # add the data from the csvs to a line graph and create a 2x2 layout
 for index, coin in enumerate(pref.coins):
     adf = df[df["symbol"] == coin.upper()]
-    g = (dbc.Col([html.P(coin.upper()), dcc.Graph(
+    g = dbc.Col([html.P(coin.upper()), dcc.Graph(
         id=f'value-over-time-{coin}',
         figure=px.line(
             adf,
@@ -149,11 +155,11 @@ for index, coin in enumerate(pref.coins):
                  "high_price": "High price ($)",
                  },
         )
-    )]))
+    )])
     ch1.append(g)
     # this keeps the formats of the coins
     if len(ch1) >= 2:
-        ch.append(dbc.Row(ch1))
+        ch.append(dbc.Row(ch1, style=pref.row_style))
         ch1 = []
 
 app.layout = html.Div(children=ch)
