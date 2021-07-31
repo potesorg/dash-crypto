@@ -30,9 +30,8 @@ class Preferences():
         self.start = config['start_date']
         self.end = datetime.datetime.now().strftime('%Y/%m/%d')
         self.headers = {'x-messari-api-key': config['api_key']}
-
-        """Writes the response as a csv file
-        """
+        # property used to avoid making api calls
+        self.local = config['local'] == "True"
 
 
 class MessariHandler():
@@ -43,21 +42,30 @@ class MessariHandler():
         coins = pref.coins
         # loop over coins and fetch results
         for coin, items in coins.items():
-            self.call(coins, coin, pref. start, pref.end, pref.headers)
-            path = self.write_responses(coins, coin)
-            # use local csvs to avoid doing API calls
-            # path = 'results/'+coin+'.csv'
+            # use this prop to specify whether to make the calls or use cached data
+            path = ""
+            if not prefs.local:
+                print(f"Processing from API calls")
+                self.call(coins, coin, pref. start, pref.end, pref.headers)
+                path = self.write_responses(coins, coin)
+            else:
+                print(f"Processing from local data")
+                # use local csvs to avoid doing API calls
+                path = 'results/'+coin+'.csv'
+
             df = pd.read_csv(path)
             print(type(df), df)
             # extend the dataframe to include new fetched data
             self.all_df = self.all_df.append(df, ignore_index=True)
         pass
 
+        """Writes the responses stored in the dict as csvs
+        """
+
     def write_responses(self, coins, coin):
         with open('results/'+coin+'.csv', 'w') as csvfile:
             # creating a csv writer object
             csvwriter = csv.writer(csvfile)
-
             # # writing the fields
             csvwriter.writerow(
                 ['coin', 'symbol', 'high_price', 'timestamp', 'volume'])
@@ -127,18 +135,21 @@ ch = [
 ]
 
 ch1 = []
-# add the data from the csvs to a line graph and create a 2x2 layout 
+# add the data from the csvs to a line graph and create a 2x2 layout
 for index, coin in enumerate(pref.coins):
     adf = df[df["symbol"] == coin.upper()]
-    g =(dbc.Col([html.P(coin.upper()), dcc.Graph(
+    g = (dbc.Col([html.P(coin.upper()), dcc.Graph(
         id=f'value-over-time-{coin}',
         figure=px.line(
             adf,
             x='timestamp',
-            y='high_price'
+            y='high_price',
+            labels={
+                 "timestamp": "Date",
+                 "high_price": "High price ($)",
+                 },
         )
-    )]
-    , width="auto"))
+    )]))
     ch1.append(g)
     # this keeps the formats of the coins
     if len(ch1) >= 2:
