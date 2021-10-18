@@ -29,7 +29,9 @@ class Preferences():
         self.coins = ast.literal_eval(config['coins'])
         self.start = config['start_date']
         self.end = datetime.datetime.now().strftime('%Y/%m/%d')
-        self.headers = {'x-messari-api-key': config['api_key']}
+        # no longer required
+        # self.headers = {'x-messari-api-key': config['api_key']}
+        self.headers = {}
         # property used to avoid making api calls
         self.local = config['local'] == "True"
         self.row_style = {
@@ -170,4 +172,4 @@ app.layout = html.Div(children=ch)
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
